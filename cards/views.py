@@ -20,7 +20,6 @@ class CardViewSet(viewsets.ModelViewSet):
         card_number = validation_serializer.validated_data['card_number']
         ccv = validation_serializer.validated_data['ccv']
 
-        # Validate card
         is_valid = self.validate_card(card_number, ccv)
 
         censored_number = f"{card_number[:4]}{'*' * 8}{card_number[-4:]}"
@@ -38,6 +37,12 @@ class CardViewSet(viewsets.ModelViewSet):
     def validate_card(self, card_number, ccv):
         pairs = [(int(card_number[i:i+2]), int(card_number[i+2:i+4])) for i in range(0, len(card_number), 4)]
         for x, y in pairs:
-            if (x ** (y ** 3)) % ccv % 2 != 0:
+            y1 = y
+            x1 = 1
+            while y1 > 0:
+                x1 = (x1 * x) % ccv 
+                y1 -= y
+            if x1 % 2 != 0:
                 return False
+                
         return True
